@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".add_lecture">
+
+    <EditText
+        android:id="@+id/etSubject"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Jméno předmětu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/etLecturer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Vyučující"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etSubject" />
+
+    <EditText
+        android:id="@+id/etRoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Kód učebny"
+        app:layout_constraintStart_toEndOf="@+id/etCode"
+        app:layout_constraintTop_toBottomOf="@+id/etLecturer" />
+
+    <EditText
+        android:id="@+id/etCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Kód předmětu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etLecturer" />
+
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tlWeekday" />
+
+    <Button
+        android:id="@+id/btnCsv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Read from csv file"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
+
+    <EditText
+        android:id="@+id/ettStart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Start time"
+        android:inputType="time"
+        app:layout_constraintEnd_toStartOf="@+id/ettEnd"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etCode" />
+
+    <EditText
+        android:id="@+id/ettEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="End time"
+        android:inputType="time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etCode" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/sLection"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:text="Přednáška"
+        app:layout_constraintBottom_toTopOf="@+id/ettEnd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etLecturer" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tlWeekday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/ettEnd"
+        tools:layout_editor_absoluteX="154dp">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/DayMonday"
+            android:singleLine="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pondělí" />
+
+        <com.google.android.material.tabs.TabItem
+            android:singleLine="true"
+            android:id="@+id/DayTuesday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Úterý" />
+
+        <com.google.android.material.tabs.TabItem
+            android:singleLine="true"
+            android:id="@+id/DayWednesday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Středa" />
+
+        <com.google.android.material.tabs.TabItem
+            android:singleLine="true"
+            android:id="@+id/DayThursday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Čtvrtek" />
+
+        <com.google.android.material.tabs.TabItem
+            android:singleLine="true"
+            android:id="@+id/DayFriday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pátek" />
+    </com.google.android.material.tabs.TabLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
