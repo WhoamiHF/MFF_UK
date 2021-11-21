@@ -4,16 +4,13 @@ package com.example.mffuk
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
-import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_schedule.*
 import kotlinx.android.synthetic.main.lecture.view.*
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
-import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -25,9 +22,41 @@ import java.lang.reflect.Type
 class Schedule : AppCompatActivity() {
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
-    private lateinit var list: MutableList<lecture>
+    private lateinit var lectureList: MutableList<lecture>
+    private var width: Int = 0
+    private var height: Int = 0
+    private val menuWidthPart : Int = 20
+    private val menuHeightPart : Int = 20
+    private var firstLectureStart : Int = 24*60
+    private var lastLectureEnd : Int = 0*60
 
-    fun getStatusBarHeight(): Int {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_schedule)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        editor = sharedPreferences.edit()
+        lectureList = getList()
+
+        val btnAdd: FloatingActionButton = findViewById (R.id.fabAdd)
+        btnAdd.setOnClickListener {
+            val intent = Intent(this, add_lecture::class.java)
+            startActivity(intent)
+        }
+        getAvailableWidthAndHeight()
+        buildSchedule()
+    }
+
+    private fun getAvailableWidthAndHeight(){
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        height = displayMetrics.heightPixels
+        width = displayMetrics.widthPixels
+        height = (height-getStatusBarHeight())
+    }
+
+    private fun getStatusBarHeight(): Int {
         var result = 0
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         if (resourceId > 0) {
@@ -36,101 +65,134 @@ class Schedule : AppCompatActivity() {
         return result
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_schedule)
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-        editor = sharedPreferences.edit()
-        list = getList()
-
-        val btnAdd: FloatingActionButton = findViewById (R.id.fabAdd)
-        btnAdd.setOnClickListener() {
-            val intent = Intent(this, add_lecture::class.java)
-            startActivity(intent)
-        }
-
-        buildSchedule()
-    }
-
-    fun buildDaysHeader(height:Int,width:Int){
+    private fun buildDaysHeader(){
         val days = arrayOf("Po","Út","St","Čt","Pá")
         var i = 0
         for(day in days) {
             val current = TextView(this)
             current.text = day
+
+            val start = height*0.95*i/5
+            val offset = height/menuHeightPart
+
             current.x = 0.toFloat()
-            current.y = (height*0.95/5*i+height/20).toFloat()
-            current.layoutParams = RelativeLayout.LayoutParams(width/20, height/5)
+            current.y = (start+offset).toFloat()
+            current.layoutParams = RelativeLayout.LayoutParams(width/menuWidthPart, height/5)
             rlSchedule.addView(current)
-            i = i + 1
+            i += 1
+        }
+    }
+    private fun formatMinutes(time:String):String
+    {
+        return if(time.length == 1){
+            0.toString().plus(time)
+        } else{
+            time
         }
     }
 
-    fun buildHoursHeader(first_lecture_start: Int,difference: Int,width: Int){
-        var current = first_lecture_start
-        while(current < first_lecture_start + difference){
+    private fun timeToXCoordinate(time: Int): Float {
+        val availableWidth: Float = (width * 0.95).toFloat()
+        val widthPerMinute = availableWidth / (lastLectureEnd - firstLectureStart)
+        val xWithoutOffset = widthPerMinute * (time - firstLectureStart)
+        return xWithoutOffset + width / menuWidthPart
+    }
+
+    private fun buildHoursHeader(difference: Int){
+        var current = firstLectureStart
+        while(current < firstLectureStart + difference){
             val currentView = TextView(this)
-            currentView.text = (current/60).toString().plus(":").plus(current%60).toString()
-            currentView.x = (width*0.95/difference * (current-first_lecture_start)+width/20).toFloat()
+
+            val hours = (current/60).toString()
+            var minutes = (current%60).toString()
+            minutes = formatMinutes(minutes)
+
+            currentView.text = hours.plus(":").plus(minutes)
+
+            currentView.x = timeToXCoordinate(current)
             currentView.y = 0.toFloat()
+
             rlSchedule.addView(currentView)
-            current = current + 100
-        }
-    }
-    fun buildSchedule(){
 
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        val width = displayMetrics.widthPixels
-
-
-
-        val first_lecture_start = 9*60
-        val last_lecture_end = 19*60
-        val difference = last_lecture_end - first_lecture_start
-        val availableHeight = (height-getStatusBarHeight())
-
-        buildDaysHeader(availableHeight,width)
-        buildHoursHeader(first_lecture_start,difference,width)
-
-        for (item in list) {
-            rlSchedule.addView(buildLectureView(item,width,difference,first_lecture_start,availableHeight))
+            current += 100
         }
     }
 
-    fun buildLectureView(item:lecture,width : Int,difference : Int,first_lecture_start:Int,availableHeight:Int) :View{
+    private fun setLecturesTimeRange(){
+        for(item in lectureList){
+            if(item.startTime < firstLectureStart){
+                firstLectureStart = item.startTime
+            }
+            if(item.endTime > lastLectureEnd){
+                lastLectureEnd = item.endTime
+            }
+        }
+
+        if(lastLectureEnd - firstLectureStart < 3*90+20){
+            when {
+                firstLectureStart <= 9*60 -> {
+                    lastLectureEnd += 2*90+20
+                }
+                lastLectureEnd >= 17*60+20 -> {
+                    firstLectureStart -= 2*90+20
+                }
+                else -> {
+                    lastLectureEnd += 90+10
+                    firstLectureStart -= 90+10
+                }
+            }
+        }
+    }
+
+    private fun buildSchedule(){
+        setLecturesTimeRange()
+        val difference = lastLectureEnd - firstLectureStart
+
+        buildDaysHeader()
+        buildHoursHeader(difference)
+
+        for (item in lectureList) {
+            rlSchedule.addView(buildLectureView(item))
+        }
+    }
+
+    private fun buildLectureView(item:lecture) :View{
         val inflater = LayoutInflater.from(this)
-        val lec = inflater.inflate(R.layout.lecture, null, false);
+        val lec = inflater.inflate(R.layout.lecture, null, false)
+
         lec.tvLectureLecturer.text = item.lecturer
         lec.tvLectureCode.text = item.code
         lec.tvLectureRoom.text = item.room
         lec.tvLectureSubject.text = item.subject
-        lec.tvLectureTime.text = (item.startTime/60).toString().plus(":").plus(item.startTime%60)
-        val start = item.startTime-first_lecture_start
-        lec.x = (width*0.95/(difference)*start+width/20).toFloat()
-        lec.y = (availableHeight*0.95/5*item.day+availableHeight/20).toFloat()
+
+        val hours = (item.startTime/60).toString()
+        var minutes = (item.startTime%60).toString()
+        minutes = formatMinutes(minutes)
+        lec.tvLectureTime.text = hours.plus(":").plus(minutes)
+
+        lec.x = timeToXCoordinate(item.startTime)
+        lec.y = (height*0.95/5*item.day+height/20).toFloat()
+
+        val lectureEndX = timeToXCoordinate(item.endTime)
+        lec.layoutParams = RelativeLayout.LayoutParams((lectureEndX -  lec.x).toInt(), height/5*95/100)
+
         if(item.lection){
             lec.setBackgroundResource(R.drawable.dark_blue_with_border)
         }
         else{
             lec.setBackgroundResource(R.drawable.light_blue_with_border)
         }
-        val duration = item.endTime - item.startTime
-        lec.layoutParams = RelativeLayout.LayoutParams(width/difference*duration, availableHeight/5*95/100)
         return lec
     }
 
-    fun getList(): MutableList<lecture> {
+    private fun getList(): MutableList<lecture> {
         var arrayItems: MutableList<lecture> = mutableListOf()
         val serializedObject = sharedPreferences.getString("MffLectures", null)
 
         if (serializedObject != null) {
             val gson = Gson()
             val type: Type = object : TypeToken<List<lecture?>?>() {}.type
-            arrayItems = gson.fromJson<MutableList<lecture>>(serializedObject, type)
+            arrayItems = gson.fromJson(serializedObject, type)
         }
         return arrayItems
     }
