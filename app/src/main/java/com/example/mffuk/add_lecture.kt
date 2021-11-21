@@ -69,6 +69,7 @@ class add_lecture : AppCompatActivity() {
 
         val btnCsv: Button = findViewById((R.id.btnCsv))
         btnCsv.setOnClickListener(){
+            verifyStoragePermissions(this)
             val intent = Intent()
                 .setType("*/*")
                 .setAction(Intent.ACTION_GET_CONTENT)
@@ -161,7 +162,6 @@ class add_lecture : AppCompatActivity() {
             var fileName = data?.data?.path
             fileName = fileName!!.split(":")[1]
             try {
-                verifyStoragePermissions(this)
                 val lines: MutableList<String> = File(fileName).readLines() as MutableList<String>
                 lines.removeFirst()
                 lines.forEach { line -> addLectureFromCsvLine(line) }
