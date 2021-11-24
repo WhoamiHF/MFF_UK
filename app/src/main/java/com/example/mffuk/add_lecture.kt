@@ -28,6 +28,7 @@ import android.graphics.Color
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_schedule.*
 import java.lang.Integer.parseInt
+import java.lang.StringBuilder
 
 class add_lecture : AppCompatActivity() {
     private lateinit var sharedPreferences : SharedPreferences
@@ -57,14 +58,13 @@ class add_lecture : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_lecture)
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         editor = sharedPreferences.edit()
         list = getList()
 
         val btnDone: Button = findViewById (R.id.btnBack)
         btnDone.setOnClickListener() {
-            val intent = Intent(this, Schedule::class.java)
-            startActivity(intent)
+            finish()
         }
 
         val btnCsv: Button = findViewById((R.id.btnCsv))
@@ -79,8 +79,9 @@ class add_lecture : AppCompatActivity() {
 
         val btnDelete: Button = findViewById(R.id.btnRemove)
         btnDelete.setOnClickListener(){
-                editor.remove("MffLectures")
-                editor.commit()
+            list.clear()
+            setList()
+            finish()
         }
 
         val btnAdd: Button = findViewById (R.id.btnAdd)
@@ -166,11 +167,25 @@ class add_lecture : AppCompatActivity() {
                 lines.removeFirst()
                 lines.forEach { line -> addLectureFromCsvLine(line) }
                 setList()
+                finish()
             }
             catch(ex:Exception){
                 Log.e("MMDSKJFG",ex.message.toString())
             }
         }
+    }
+
+    private fun replaceSpecialCharacters(line: String) : String{
+        var mline : StringBuilder = StringBuilder("x")
+        for (char in line){
+            if(char == 'ì' || char == 'ò'){
+                mline.append("c")
+            }
+            else{
+                mline.append(char)
+            }
+        }
+        return mline.toString()
     }
 
     private fun addLectureFromCsvLine(line :String){
@@ -179,8 +194,8 @@ class add_lecture : AppCompatActivity() {
             tokens[4].toInt()-1,
             tokens[5].toInt(),
             tokens[5].toInt()+ tokens[7].toInt(),
-            tokens[3],
-            tokens[12],
+            replaceSpecialCharacters(tokens[3]),
+            replaceSpecialCharacters(tokens[12]),
             tokens[1][tokens[1].length-2]=='p',
             tokens[6],
             tokens[2],
@@ -204,6 +219,6 @@ class add_lecture : AppCompatActivity() {
         val json: String = gson.toJson(list)
 
         editor.putString("MffLectures", json)
-        editor.commit()
+        editor.apply()
     }
 }

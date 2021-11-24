@@ -13,6 +13,7 @@ import android.util.DisplayMetrics
 import android.view.*
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.view.children
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -32,21 +33,28 @@ class Schedule : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_schedule)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        editor = sharedPreferences.edit()
-        lectureList = getList()
+    override fun onResume() {
+        super.onResume()
+        setContentView(R.layout.activity_schedule) // sets whole new view - without any lectures
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         val btnAdd: FloatingActionButton = findViewById (R.id.fabAdd)
         btnAdd.setOnClickListener {
             val intent = Intent(this, add_lecture::class.java)
             startActivity(intent)
         }
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        editor = sharedPreferences.edit()
+        lectureList = getList()
+
         getAvailableWidthAndHeight()
         buildSchedule()
     }
+
+
 
     private fun getAvailableWidthAndHeight(){
         val displayMetrics = DisplayMetrics()

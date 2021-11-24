@@ -13,4 +13,21 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="SwitchCompatThemeBlue" >
+        <item name="colorControlActivated">@color/blue</item>
+    </style>
+
+    <style name="SwitchCompatThemeRed" >
+        <item name="colorControlActivated">@color/red</item>
+    </style>
+
+    <style name="SwitchCompatThemeGreen" >
+        <item name="colorControlActivated">@color/green</item>
+    </style>
+
+    <style name="SwitchCompatThemePurple" >
+        <item name="colorControlActivated">@color/purple</item>
+    </style>
+
 </resources>

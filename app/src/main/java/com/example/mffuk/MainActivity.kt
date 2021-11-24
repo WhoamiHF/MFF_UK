@@ -17,5 +17,11 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, Schedule::class.java)
             startActivity(intent)
         }
+
+        val btnMap: Button = findViewById (R.id.btnMap)
+        btnMap.setOnClickListener() {
+            val intent = Intent(this, MapsActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
